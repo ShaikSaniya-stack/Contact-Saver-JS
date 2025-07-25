@@ -1,0 +1,27 @@
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+
+const app = express();
+app.use(express.json());
+app.use(express.static("public"));
+
+const DATA_FILE = path.join(__dirname, "messages.json");
+
+app.post("/api/contact", (req, res) => {
+  const { name, email, message } = req.body;
+  const newMessage = { name, email, message, date: new Date() };
+
+  let messages = [];
+  if (fs.existsSync(DATA_FILE)) {
+    messages = JSON.parse(fs.readFileSync(DATA_FILE));
+  }
+
+  messages.push(newMessage);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(messages, null, 2));
+
+  res.json({ message: "Message received and saved!" });
+});
+
+const PORT = 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
